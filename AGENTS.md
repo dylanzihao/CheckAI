@@ -31,10 +31,8 @@ CheckAI/
 │   │   ├── split.py             # 数据集划分
 │   │   └── augment.py           # nlpcda 数据增强
 │   ├── train/                   # 训练相关代码
-│   │   ├── config.py            # 训练配置
-│   │   ├── dataset.py           # PyTorch Dataset
-│   │   ├── model.py             # 模型定义（BERT + 分类头）
-│   │   └── trainer.py           # 训练主逻辑
+│   │   ├── config.py            # 训练配置（路径解析 + TrainingArguments）
+│   │   └── trainer.py           # 训练主逻辑（HuggingFace Trainer API）
 │   ├── inference/               # 推理相关代码
 │   │   ├── quantize.py          # INT8 量化脚本
 │   │   └── predict.py           # 推理脚本
@@ -97,15 +95,14 @@ CheckAI/
 
 - **预训练模型**: `hfl/chinese-roberta-wwm-ext`
 - **本地路径**: `D:\Dylan\Model\chinese-roberta-wwm-ext`
+- **模型类**: `AutoModelForSequenceClassification`（HuggingFace 内置）
 - **任务**: 二分类（AI-generated text detection）
-  - 在 [CLS] 上接线性分类头（2 个输出）
-  - 损失函数：CrossEntropyLoss
+- **损失函数**: CrossEntropyLoss（模型内置）
 
 ### 框架
 
-- PyTorch + Transformers + Datasets
-- 仅训练分类头或全模型微调
-- 多 GPU 训练：torch DistributedDataParallel（2×T4）
+- PyTorch + Transformers + Datasets + HuggingFace Trainer API
+- 多 GPU 训练：Trainer 内置 DDP，使用 torchrun 启动（2×T4）
 
 ### 超参配置
 
@@ -125,14 +122,11 @@ fp16: true                        # T4 支持混合精度加速
 
 该 Notebook 实现从 GitHub 克隆源码并完整执行训练流程：
 
-1. **安装依赖**：`pip install transformers datasets torch`
-2. **从 GitHub 克隆**当前仓库到 Kaggle 环境
-3. **加载数据**：加载 data/processed 中的 JSONL 文件
-4. **初始化模型**：加载预训练模型并添加分类头
-5. **配置分布式训练**：检测可用 GPU 数量，使用 `torch.distributed.launch` / `DistributedDataParallel`
-6. **执行训练**：启用 fp16 混合精度，2×T4 各 batch_size=8，gradient_accumulation_steps=2
-7. **保存模型**：保存 FP32 模型权重到输出目录（仅保存主进程 rank 0）
-8. **评估**：在测试集上评估并输出指标（Accuracy, Precision, Recall, F1）
+1. **从 GitHub 克隆**当前仓库到 Kaggle 环境
+2. **安装依赖**：`pip install -r /kaggle/working/CheckAI/requirements/requirements-kaggle.txt`
+3. **（可选）预加载模型**：将 Kaggle Input 中的模型转为 safetensors 缓存到 `/kaggle/working/`，加速训练子进程加载
+4. **启动训练**：使用 `torch.distributed.run` 启动 `trainer.py`（内部使用 HuggingFace Trainer API）
+5. **Trainer 自动处理**：分布式初始化、混合精度、梯度累积、日志、评估、checkpoint 保存
 
 ## 推理规范
 
@@ -157,6 +151,7 @@ fp16: true                        # T4 支持混合精度加速
 
 ## 代码规范
 
+- **优先使用标准库**：能用 HuggingFace / PyTorch 内置 API 的不要自己手写（如 `Trainer` > 手动训练循环、`AutoModelForSequenceClassification` > 自定义 `PreTrainedModel`、`datasets.Dataset` > 自定义 `torch.utils.data.Dataset`）。只有标准库无法满足需求时才自行实现
 - 使用清晰的函数和类命名，建议添加类型注解
 - 关键配置使用 config 或 yaml 管理，避免硬编码
 - 数据处理脚本应为可复现的模块化设计
