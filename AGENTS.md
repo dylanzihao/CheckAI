@@ -39,7 +39,8 @@ CheckAI/
 │   └── run.ipynb                # Kaggle 训练入口 Notebook
 ├── models/                      # 模型保存（gitignored）
 │   ├── base/                    # 微调后的 FP32 模型
-│   └── quantized/               # INT8 量化模型
+│   ├── quantized/               # INT8 量化模型
+│   └── cache/                   # OpenVINO 编译缓存（自动生成）
 ├── requirements/                # 依赖文件
 │   ├── requirements-local.txt   # 本地依赖（数据处理 + 推理）
 │   └── requirements-kaggle.txt  # Kaggle 依赖（训练）
@@ -144,10 +145,19 @@ fp16: true                        # T4 支持混合精度加速
 ### 推理
 
 - 支持 FP32（原始模型）和 INT8（量化模型）两种模式
-- 输入：单条文本 或 CSV 批量文件
+- 输入：单条文本 或 jsonl 批量文件
 - 输出：label（0/1）和置信度概率
 - 支持 Intel GPU / NPU 设备选择
 - 性能对比：输出 FP32 vs INT8 的推理速度和精度对比
+- 长文本处理：超过 max_length（512 tokens）时自动使用滑动窗口（50% 重叠 token 级切分，log-softmax 平均聚合）
+
+### 编译缓存（仅 INT8 / OpenVINO 模式有效）
+
+- 首次推理时 OpenVINO 会对模型进行设备编译（NPU/GPU 耗时较长，CPU 数秒）
+- 指定 `--cache-dir` 后，编译结果缓存到磁盘，后续推理直接加载，秒级启动
+- 不同 `--device`、`--batch-size`、`--max-length` 组合生成不同缓存
+- 默认缓存路径：`models/cache/`
+- 删除缓存目录后下次推理会重新编译
 
 ## 代码规范
 
@@ -222,8 +232,9 @@ python src/inference/quantize.py \
 # 2. 单条文本预测
 python src/inference/predict.py --model-path models/quantized --text "待检测文本"
 
-# 3. 批量文件预测（JSONL 格式）
-python src/inference/predict.py --model-path models/quantized --input-file data/test.jsonl --output-file results.jsonl
+# 3. 批量文件预测（JSONL 格式，带编译缓存加速首次启动）
+python src/inference/predict.py --model-path models/quantized --input-file data/test.jsonl \
+    --cache-dir models/cache --output-file results.jsonl
 
 # 4. 对比 FP32 与 INT8 性能
 python src/inference/predict.py --model-path models/base --text "待检测文本"

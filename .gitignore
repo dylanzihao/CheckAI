@@ -35,3 +35,9 @@ Thumbs.db
 
 # Kaggle API credentials (if present locally)
 kaggle.json
+
+# Model Training Results
+results.zip
+
+# Temporary files
+tmp/
