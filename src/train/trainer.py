@@ -30,6 +30,7 @@ from transformers import (
 )
 
 from src.train.config import TrainConfig, default_config
+from src.train.visualize import _softmax, visualize_all
 
 logging.basicConfig(
     level=logging.INFO,
@@ -128,17 +129,27 @@ def train(config: TrainConfig | None = None) -> None:
     logger.info("开始训练...")
     trainer.train()
 
-    # ---- 测试集评估 ----
+    # ---- 训练过程可视化 ----
+    log_history = trainer.state.log_history
+    logger.info(f"训练日志条数: {len(log_history)}")
+
+    # ---- 测试集评估 + 可视化 ----
     if "test" in dataset:
         logger.info("测试集评估...")
-        test_results = trainer.evaluate(dataset["test"])
+        preds_output = trainer.predict(dataset["test"])
+        y_true = preds_output.label_ids
+        y_probs = _softmax(preds_output.predictions)
+
+        y_pred = np.argmax(y_probs, axis=1)
         logger.info(
-            f"  Test | Loss: {test_results['eval_loss']:.4f} | "
-            f"Acc: {test_results['eval_accuracy']:.4f} | "
-            f"P: {test_results['eval_precision']:.4f} | "
-            f"R: {test_results['eval_recall']:.4f} | "
-            f"F1: {test_results['eval_f1']:.4f}",
+            f"  Test | Loss: {preds_output.metrics['test_loss']:.4f} | "
+            f"Acc: {accuracy_score(y_true, y_pred):.4f} | "
+            f"P: {precision_score(y_true, y_pred, zero_division=0):.4f} | "
+            f"R: {recall_score(y_true, y_pred, zero_division=0):.4f} | "
+            f"F1: {f1_score(y_true, y_pred, zero_division=0):.4f}",
         )
+
+        visualize_all(log_history, y_true, y_probs, training_args.output_dir)
 
     # ---- 保存 ----
     logger.info("保存模型...")
