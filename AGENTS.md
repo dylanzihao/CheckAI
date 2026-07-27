@@ -217,7 +217,7 @@ python src/data/clean.py
 python src/data/split.py
 
 # 3. 数据增强：对训练集进行 nlpcda 增强
-#    输出 data/augmented/train_augmented.jsonl
+#    输出 data/augmented/train.jsonl
 python src/data/augment.py
 ```
 
