@@ -32,7 +32,8 @@ CheckAI/
 │   │   └── augment.py           # nlpcda 数据增强
 │   ├── train/                   # 训练相关代码
 │   │   ├── config.py            # 训练配置（路径解析 + TrainingArguments）
-│   │   └── trainer.py           # 训练主逻辑（HuggingFace Trainer API）
+│   │   ├── trainer.py           # 训练主逻辑（HuggingFace Trainer API）
+│   │   └── visualize.py         # matplotlib 训练成果可视化
 │   ├── inference/               # 推理相关代码
 │   │   ├── quantize.py          # INT8 量化脚本
 │   │   └── predict.py           # 推理脚本
@@ -129,6 +130,18 @@ fp16: true                        # T4 支持混合精度加速
 4. **启动训练**：使用 `torch.distributed.run` 启动 `trainer.py`（内部使用 HuggingFace Trainer API）
 5. **Trainer 自动处理**：分布式初始化、混合精度、梯度累积、日志、评估、checkpoint 保存
 
+### 训练可视化
+
+训练结束后自动使用 matplotlib 生成 PNG 图表，保存到 `models/base/plots/`：
+
+- **loss_curves.png**：train loss + eval loss 双线图
+- **metrics_curves.png**：accuracy / precision / recall / f1 随步数变化
+- **confusion_matrix.png**：测试集 2×2 混淆矩阵热力图（Human vs AI-Generated）
+- **roc_curve.png**：ROC 曲线 + AUC 值
+- **dashboard.png**：2×2 综合仪表盘（四合一概览）
+
+图表静默保存，不弹窗。测试集评估使用 `trainer.predict()` 获取逐样本 logits 以支持混淆矩阵和 ROC 绘制。
+
 ## 推理规范
 
 ### 量化
@@ -187,6 +200,7 @@ fp16: true                        # T4 支持混合精度加速
 - pandas, numpy
 - scikit-learn
 - tqdm
+- matplotlib
 
 ## 程序交付使用
 
