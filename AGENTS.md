@@ -24,7 +24,7 @@ CheckAI/
 │   │   ├── val.jsonl
 │   │   └── test.jsonl
 │   └── augmented/               # 数据增强后的训练数据（JSONL 格式）
-│       └── train_augmented.jsonl
+│       └── train.jsonl
 ├── src/
 │   ├── data/                    # 数据处理脚本
 │   │   ├── clean.py             # 数据清洗
@@ -80,11 +80,12 @@ CheckAI/
 
 - 仅对**训练集**进行增强
 - 增强方法：全部使用
-  - **同义词替换** (SimbertBased): 生成语义相近的句子
-  - **随机插入** (RandomInsert): 随机位置插入词语
-  - **随机删除** (RandomDelete): 随机删除部分词语
-  - **随机交换** (RandomSwap): 交换句子中词语位置
-  - **TF-IDF 替换** (TfIdfBased): 基于 TF-IDF 相似词替换
+  - **同/近义词替换** (Similarword): 替换为同/近义词
+  - **随机词替换** (Randomword): 随机替换词语
+  - **随机删除字符** (RandomDeleteChar): 随机删除部分字符
+  - **字符位置交换** (CharPositionExchange): 交换句子中字符位置
+  - **等价字替换** (EquivalentChar): 替换为等价字
+  - **同音字替换** (Homophone): 替换为同音字
 - 增强倍率：每个原始样本生成 2-3 个增强样本
 - 注意事项：
   - 增强后的训练集需保持 1:1 平衡
@@ -98,6 +99,7 @@ CheckAI/
 - **预训练模型**: `hfl/chinese-roberta-wwm-ext`
 - **本地路径**: `D:\Dylan\Model\chinese-roberta-wwm-ext`
 - **模型类**: `AutoModelForSequenceClassification`（HuggingFace 内置）
+- **加载方式**: 所有 `from_pretrained` 均设置 `local_files_only=True`，不从 HuggingFace 自动下载
 - **任务**: 二分类（AI-generated text detection）
 - **损失函数**: CrossEntropyLoss（模型内置）
 
@@ -111,8 +113,10 @@ CheckAI/
 ```
 max_seq_length: 512               # BERT 最大长度，覆盖 ~63% 数据无需截断
 batch_size: 8                     # per GPU，2×T4 共 16; T4 16GB 下 8 为安全值
+eval_batch_size: 16               # 评估 batch size（可大于训练 batch size）
 gradient_accumulation_steps: 2    # 有效 batch_size = 8 × 2 GPU × 2 = 32
 learning_rate: 2e-5
+weight_decay: 0.01
 num_epochs: 3
 optimizer: AdamW
 scheduler: linear warmup + linear decay
