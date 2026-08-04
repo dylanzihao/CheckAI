@@ -1,4 +1,4 @@
-# CheckAI Agents Guide
+# ai-checker Agents Guide
 
 ## 项目概览
 
@@ -15,7 +15,7 @@
 ## 目录结构规范
 
 ```
-CheckAI/
+ai-checker/
 ├── data/
 │   ├── raw/
 │   │   └── C-ReD/               # 原始数据，只读不修改
@@ -129,7 +129,7 @@ fp16: true                        # T4 支持混合精度加速
 该 Notebook 实现从 GitHub 克隆源码并完整执行训练流程：
 
 1. **从 GitHub 克隆**当前仓库到 Kaggle 环境
-2. **安装依赖**：`pip install -r /kaggle/working/CheckAI/requirements/requirements-kaggle.txt`
+2. **安装依赖**：`pip install -r /kaggle/working/ai-checker/requirements/requirements-kaggle.txt`
 3. **（可选）预加载模型**：将 Kaggle Input 中的模型转为 safetensors 缓存到 `/kaggle/working/`，加速训练子进程加载
 4. **启动训练**：使用 `torch.distributed.run` 启动 `trainer.py`（内部使用 HuggingFace Trainer API）
 5. **Trainer 自动处理**：分布式初始化、混合精度、梯度累积、日志、评估、checkpoint 保存
@@ -208,7 +208,7 @@ fp16: true                        # T4 支持混合精度加速
 
 ## 程序交付使用
 
-所有脚本从项目根目录（`CheckAI/`）执行。
+所有脚本从项目根目录（`ai-checker/`）执行。
 
 ### 数据处理
 

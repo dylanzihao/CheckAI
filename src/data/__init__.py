@@ -1,1 +1,1 @@
-# CheckAI - data processing package
+# ai-checker - data processing package

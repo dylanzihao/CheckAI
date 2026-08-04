@@ -1,1 +1,1 @@
-# CheckAI - src package
+# ai-checker - src package

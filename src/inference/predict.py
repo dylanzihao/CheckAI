@@ -442,7 +442,7 @@ def run_interactive(classifier):
     is_ov = isinstance(classifier, OVClassifier)
     mode_str = "INT8(OpenVINO)" if is_ov else "FP32(PyTorch)"
     print(f"\n{'=' * 60}")
-    print(f"  CheckAI 交互式推理模式 [{mode_str}]")
+    print(f"  ai-checker 交互式推理模式 [{mode_str}]")
     print(f"  输入文本后按回车检测，输入 :q 或 :quit 退出")
     print(f"{'=' * 60}\n")
 
@@ -471,8 +471,11 @@ def run_interactive(classifier):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
     parser = argparse.ArgumentParser(
-        description="CheckAI 推理脚本 —— 支持 FP32(PyTorch) 和 INT8(OpenVINO)",
+        description="ai-checker 推理脚本 —— 支持 FP32(PyTorch) 和 INT8(OpenVINO)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 

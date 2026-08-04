@@ -1,1 +1,1 @@
-# CheckAI - inference package
+# ai-checker - inference package

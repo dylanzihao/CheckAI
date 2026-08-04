@@ -1,1 +1,1 @@
-# CheckAI - training package
+# ai-checker - training package

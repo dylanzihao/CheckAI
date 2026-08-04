@@ -1,4 +1,4 @@
-# CheckAI
+# ai-checker
 
 中文 AI 生成文本检测工具 —— 基于 `hfl/chinese-roberta-wwm-ext` 微调的二分类模型，用于区分人类写作与 AI 生成的文本。
 
@@ -13,7 +13,7 @@
 ## 目录结构
 
 ```
-CheckAI/
+ai-checker/
 ├── data/
 │   ├── raw/C-ReD/              # 原始数据（只读，不入库）
 │   ├── processed/              # 清洗划分后的 JSONL
@@ -44,8 +44,8 @@ CheckAI/
 ## 快速开始
 
 ```bash
-git clone https://github.com/your-username/CheckAI.git
-cd CheckAI
+git clone https://github.com/your-username/ai-checker.git
+cd ai-checker
 
 pip install -r requirements/requirements-local.txt
 
